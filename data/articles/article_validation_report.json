@@ -1,0 +1,12 @@
+{
+  "total": 20,
+  "valid": 20,
+  "rejected": 0,
+  "checks": [
+    "title",
+    "duplicate URL",
+    "publication year 2023-2026",
+    "topic keyword relevance"
+  ],
+  "rejected_items": []
+}
