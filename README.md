@@ -20,6 +20,10 @@ language:
 
 # ⚕️ دستیار بالینی پروتکل تشخیص دوگانه (RAG)
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SBZ-EDU/dual-diagnosis-rag/blob/master/notebooks/Dual_Diagnosis_RAG_Colab.ipynb)
+
+**اجرای یک‌کلیکی Colab:** دریافت مقالات از Hugging Face، آپلود PDF/کتاب مجاز، بازسازی ایندکس، تست RAG و ثبت W&B.
+
 > سایکوز / اسکیزوفرنی + اختلال مصرف مواد + BPD ± ADHD
 > مبتنی بر شواهد علمی NICE · APA · WFSBP
 
