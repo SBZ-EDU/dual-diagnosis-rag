@@ -12,6 +12,7 @@ log = logging.getLogger("app")
 
 import config
 from rag import retriever, pipeline, store
+from monitoring.risk_engine import assess as assess_risk
 
 # ---------- آماده‌سازی ایندکس ----------
 def ensure_index():
@@ -54,6 +55,13 @@ def save_feedback(question: str, answer_text: str, rating: int, comment: str):
     return f"✅ بازخورد ذخیره شد (فایل: {os.path.basename(path)}). از شما ممنونیم!"
 
 
+def risk_api(psychosis, suicide, violence, withdrawal, substance_use, sleep_loss, nonadherence):
+    """پایش خطر روزانه/هفتگی؛ از API نیز با نام /risk قابل فراخوانی است."""
+    return assess_risk(dict(psychosis=psychosis, suicide=suicide, violence=violence,
+                            withdrawal=withdrawal, substance_use=substance_use,
+                            sleep_loss=sleep_loss, nonadherence=nonadherence))
+
+
 # ---------- رابط کاربری ----------
 import gradio as gr
 
@@ -89,6 +97,14 @@ with gr.Blocks(title="دستیار پروتکل تشخیص دوگانه", css=CS
         fb_btn = gr.Button("ثبت بازخورد")
         fb_out = gr.Markdown()
         fb_btn.click(save_feedback, inputs=[q_in, ans_out, rating, comment], outputs=fb_out)
+
+    with gr.Tab("📈 پایش خطر"):
+        gr.Markdown("### پایش روزانه یا هفتگی\nهر شاخص را از ۰ (ندارد) تا ۴ (شدید) ثبت کنید. این ابزار **دارو را خودکار تغییر نمی‌دهد**.")
+        labels = ["روان‌پریشی", "خودکشی", "خشونت", "ترک ماده", "مصرف ماده", "کم‌خوابی", "عدم پایبندی"]
+        sliders = [gr.Slider(0, 4, 0, step=1, label=x) for x in labels]
+        risk_btn = gr.Button("محاسبه و پیشنهاد سطح اقدام", variant="primary")
+        risk_out = gr.JSON(label="گزارش خطر")
+        risk_btn.click(risk_api, inputs=sliders, outputs=risk_out, api_name="risk")
 
     with gr.Tab("📚 درباره پایگاه دانش"):
         gr.Markdown(
