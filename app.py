@@ -13,6 +13,7 @@ log = logging.getLogger("app")
 import config
 from rag import retriever, pipeline, store
 from monitoring.risk_engine import assess as assess_risk
+from integrations import firebase_store
 
 # ---------- آماده‌سازی ایندکس ----------
 def ensure_index():
@@ -55,11 +56,21 @@ def save_feedback(question: str, answer_text: str, rating: int, comment: str):
     return f"✅ بازخورد ذخیره شد (فایل: {os.path.basename(path)}). از شما ممنونیم!"
 
 
-def risk_api(psychosis, suicide, violence, withdrawal, substance_use, sleep_loss, nonadherence):
-    """پایش خطر روزانه/هفتگی؛ از API نیز با نام /risk قابل فراخوانی است."""
-    return assess_risk(dict(psychosis=psychosis, suicide=suicide, violence=violence,
-                            withdrawal=withdrawal, substance_use=substance_use,
-                            sleep_loss=sleep_loss, nonadherence=nonadherence))
+def risk_api(patient_ref, psychosis, suicide, violence, withdrawal, substance_use, sleep_loss, nonadherence):
+    """پایش خطر روزانه/هفتگی؛ patient_ref پیش از ذخیره هش می‌شود."""
+    result = assess_risk(dict(psychosis=psychosis, suicide=suicide, violence=violence,
+                              withdrawal=withdrawal, substance_use=substance_use,
+                              sleep_loss=sleep_loss, nonadherence=nonadherence))
+    if firebase_store.enabled() and (patient_ref or "").strip():
+        try:
+            result["firebaseAssessmentId"] = firebase_store.save_assessment(patient_ref.strip(), result)
+            result["storage"] = "firestore"
+        except Exception as exc:
+            log.exception("خطای ذخیره Firebase")
+            result["storageWarning"] = str(exc)
+    else:
+        result["storage"] = "disabled"
+    return result
 
 
 # ---------- رابط کاربری ----------
@@ -100,11 +111,12 @@ with gr.Blocks(title="دستیار پروتکل تشخیص دوگانه", css=CS
 
     with gr.Tab("📈 پایش خطر"):
         gr.Markdown("### پایش روزانه یا هفتگی\nهر شاخص را از ۰ (ندارد) تا ۴ (شدید) ثبت کنید. این ابزار **دارو را خودکار تغییر نمی‌دهد**.")
+        patient_ref = gr.Textbox(label="کد داخلی بیمار (نام و کد ملی وارد نشود)", type="password")
         labels = ["روان‌پریشی", "خودکشی", "خشونت", "ترک ماده", "مصرف ماده", "کم‌خوابی", "عدم پایبندی"]
         sliders = [gr.Slider(0, 4, 0, step=1, label=x) for x in labels]
         risk_btn = gr.Button("محاسبه و پیشنهاد سطح اقدام", variant="primary")
         risk_out = gr.JSON(label="گزارش خطر")
-        risk_btn.click(risk_api, inputs=sliders, outputs=risk_out, api_name="risk")
+        risk_btn.click(risk_api, inputs=[patient_ref, *sliders], outputs=risk_out, api_name="risk")
 
     with gr.Tab("📚 درباره پایگاه دانش"):
         gr.Markdown(

@@ -7,4 +7,5 @@ torch==2.4.1
 numpy<2
 huggingface_hub
 wandb
+firebase-admin>=6.5,<8
 peft==0.12.0
