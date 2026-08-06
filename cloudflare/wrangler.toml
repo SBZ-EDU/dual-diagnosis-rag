@@ -1,0 +1,9 @@
+name = "dual-diagnosis-rag"
+main = "src/index.js"
+compatibility_date = "2026-08-06"
+account_id = "5b456a2b43bb367410c50b35b9e7f71f"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dual-diagnosis-rag-db"
+database_id = "adc5372f-1bb1-4833-81f2-524ee8efc369"
