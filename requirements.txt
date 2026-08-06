@@ -1,0 +1,10 @@
+# وابستگی‌های اپ RAG تشخیص دوگانه
+gradio==4.44.1
+sentence-transformers==3.2.1
+transformers==4.44.2
+accelerate>=0.30
+torch==2.4.1
+numpy<2
+huggingface_hub
+wandb
+peft==0.12.0
