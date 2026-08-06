@@ -128,6 +128,14 @@ python -m scripts.train --model Qwen/Qwen2.5-0.5B-Instruct --epochs 3
 
 ---
 
+## 🧪 دموی زنده و تست RAG نقش‌محور
+
+- Cloudflare UI: https://dual-diagnosis-clinical-hub.elasa2next.workers.dev
+- API: `POST /api/chat` با بدنه `{"role":"patient|family|doctor|admin","question":"..."}`
+- در رابط، از بخش **دستیار علمی** نقش مخاطب را انتخاب کنید.
+
+> مخزن Hugging Face صفحه میزبانی کد/مدل است؛ رابط عمومی فعال روی Cloudflare میزبانی می‌شود.
+
 ## 📊 پایش W&B
 
 داشبورد اجرای RAG، تأخیر و چرخه‌های به‌روزرسانی داده:
