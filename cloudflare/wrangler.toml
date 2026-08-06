@@ -16,3 +16,8 @@ binding = "AI"
 binding = "DB"
 database_name = "dual-diagnosis-rag-db"
 database_id = "adc5372f-1bb1-4833-81f2-524ee8efc369"
+
+[[d1_databases]]
+binding = "GUIDELINES_DB"
+database_name = "dual-diagnosis-guidelines-db"
+database_id = "54040cee-3c8d-4884-8e0a-c4b3b7e12e44"
