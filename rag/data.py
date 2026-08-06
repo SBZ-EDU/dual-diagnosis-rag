@@ -57,7 +57,7 @@ def load_documents() -> List[Dict]:
                 docs.append({"source": "protocol.md", "type": "protocol", "text": piece})
 
     # ۲) منابع اضافه از پوشه‌ها
-    type_map = {"articles": "article", "patient_history": "patient", "feedback": "feedback"}
+    type_map = {"articles": "article", "guidelines": "guideline", "patient_history": "patient", "feedback": "feedback"}
     for folder, kind in type_map.items():
         d = config.SOURCES[folder]
         if not os.path.isdir(d):
@@ -78,7 +78,14 @@ def load_documents() -> List[Dict]:
                     records = [json.loads(x) for x in raw.splitlines() if x.strip()]
                 elif fname.endswith(".json"):
                     obj = json.loads(raw)
-                    records = obj.get("articles", obj) if isinstance(obj, dict) else obj
+                    if isinstance(obj, dict) and isinstance(obj.get("articles"), list):
+                        records = obj["articles"]
+                    elif isinstance(obj, list):
+                        records = obj
+                    elif isinstance(obj, dict) and obj.get("title"):
+                        records = [obj]
+                    else:
+                        records = []
             except Exception:
                 records = []
             if records:

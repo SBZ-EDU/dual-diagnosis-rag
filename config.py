@@ -12,6 +12,7 @@ PROTOCOL_FILE = os.path.join(DATA_DIR, "protocol.md")
 # پوشه‌های منابع اضافه (مقاله، سابقه بیمار، بازخورد کاربران)
 SOURCES = {
     "articles": os.path.join(DATA_DIR, "articles"),
+    "guidelines": os.path.join(DATA_DIR, "guidelines"),
     "patient_history": os.path.join(DATA_DIR, "patient_history"),
     "feedback": os.path.join(DATA_DIR, "feedback"),
 }
