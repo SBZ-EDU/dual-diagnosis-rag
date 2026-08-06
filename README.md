@@ -128,6 +128,11 @@ python -m scripts.train --model Qwen/Qwen2.5-0.5B-Instruct --epochs 3
 
 ---
 
+## 📊 پایش W&B
+
+داشبورد اجرای RAG، تأخیر و چرخه‌های به‌روزرسانی داده:
+https://wandb.ai/elasa2next-sosa-/dual-diagnosis-rag
+
 ## ⚠️ سلب مسئولیت
 
 این ابزار صرفاً **آموزشی** است و جایگزین مشاوره پزشک نیست. تصمیم نهایی درمان همیشه با پزشک معالج است.

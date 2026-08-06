@@ -71,6 +71,22 @@ def load_documents() -> List[Dict]:
                     raw = f.read()
             except Exception:
                 continue
+            # مقاله‌های اعتبارسنجی‌شده JSON/JSONL به متن ساخت‌یافته RAG تبدیل می‌شوند.
+            records = []
+            try:
+                if fname.endswith(".jsonl"):
+                    records = [json.loads(x) for x in raw.splitlines() if x.strip()]
+                elif fname.endswith(".json"):
+                    obj = json.loads(raw)
+                    records = obj.get("articles", obj) if isinstance(obj, dict) else obj
+            except Exception:
+                records = []
+            if records:
+                for rec in records:
+                    text = "\n".join(filter(None, [rec.get("title"), rec.get("abstract"), rec.get("journal"), rec.get("published"), rec.get("url")]))
+                    for piece in _chunk_text(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP):
+                        docs.append({"source": rec.get("url") or fname, "type": kind, "text": piece})
+                continue
             for block in _split_markdown_by_headers(raw):
                 for piece in _chunk_text(block, config.CHUNK_SIZE, config.CHUNK_OVERLAP):
                     docs.append({"source": fname, "type": kind, "text": piece})
