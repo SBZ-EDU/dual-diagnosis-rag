@@ -1,4 +1,4 @@
-name = "dual-diagnosis-rag"
+name = "dual-diagnosis-clinical-hub"
 main = "src/index.js"
 compatibility_date = "2026-08-06"
 account_id = "5b456a2b43bb367410c50b35b9e7f71f"
