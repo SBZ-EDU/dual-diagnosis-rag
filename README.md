@@ -22,7 +22,7 @@ language:
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/SBZ-EDU/dual-diagnosis-rag/blob/master/notebooks/Dual_Diagnosis_RAG_Colab.ipynb)
 
-**اجرای یک‌کلیکی Colab:** دریافت ۱۰۰ مقاله بین‌المللی + ۱۰۰ مقاله وابسته به ایران + راهنماها از Hugging Face، آپلود PDF/کتاب مجاز، بازسازی ایندکس، آزمون خودکار سلامت RAG و ثبت W&B.
+**اجرای یک‌کلیکی Colab:** دریافت دیتاست‌ها، دانلود خودکار PDFهای Open Access با سقف حجم، استخراج متن، آپلود PDF/کتاب مجاز، بازسازی و آزمون RAG، Fine-tune اختیاری، ثبت W&B و تحویل ZIP خروجی.
 
 > سایکوز / اسکیزوفرنی + اختلال مصرف مواد + BPD ± ADHD
 > مبتنی بر شواهد علمی NICE · APA · WFSBP
