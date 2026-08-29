@@ -22,10 +22,15 @@ def _index_key() -> str:
 
 
 def save(chunks: List[Dict], vectors: np.ndarray) -> None:
+    """ذخیره‌ی فشرده: JSON بدون تورفتگی + بردارهای float16 (نصف حجم).
+
+    load() بردارها را به float32 برمی‌گرداند؛ دقت کسینوس در fp16 برای این
+    کاربرد کافی است و حجم ایندکس حدوداً نصف می‌شود.
+    """
     os.makedirs(config.INDEX_DIR, exist_ok=True)
     with open(config.CHUNKS_FILE, "w", encoding="utf-8") as f:
-        json.dump(chunks, f, ensure_ascii=False, indent=2)
-    np.savez_compressed(config.VECTORS_FILE, vectors=vectors)
+        json.dump(chunks, f, ensure_ascii=False)
+    np.savez_compressed(config.VECTORS_FILE, vectors=vectors.astype(np.float16))
     _cache["key"] = None  # کش قدیمی را بی‌اعتبار کن
 
 

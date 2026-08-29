@@ -29,12 +29,13 @@ if not config.TELEGRAM_BOT_TOKEN:
         "متغیر محیطی وارد کنید:  TELEGRAM_BOT_TOKEN=123:abc python telegram_bot.py"
     )
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, BotCommand, BotCommandScopeChat
 from telegram.ext import (
     Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters,
 )
 
 from rag import pipeline, store
+from rag.generator import TYPE_FA
 from monitoring.risk_engine import assess as assess_risk
 import telegram_posts
 
@@ -42,6 +43,18 @@ from datetime import datetime, time as dt_time
 from zoneinfo import ZoneInfo
 
 TEHRAN_TZ = ZoneInfo("Asia/Tehran")
+
+# ---------- منوی پایین چت (دکمه‌های ثابت) ----------
+BTN_RISK = "📈 پایش خطر"
+BTN_TIP = "🎓 نکته امروز"
+BTN_HELP = "❓ راهنما"
+BTN_ABOUT = "📚 درباره"
+
+MAIN_KEYBOARD = ReplyKeyboardMarkup(
+    [[BTN_RISK, BTN_TIP], [BTN_HELP, BTN_ABOUT]],
+    resize_keyboard=True,
+    input_field_placeholder="سؤال خود را فارسی بنویسید…",
+)
 
 DISCLAIMER = "⚠️ این پاسخ از پایگاه دانش علمی استخراج شده و جایگزین مشاوره پزشک نیست؛ تصمیم نهایی درمان با پزشک معالج است."
 
@@ -63,16 +76,19 @@ WELCOME = (
     "(سایکوز / اسکیزوفرنی + اختلال مصرف مواد + BPD ± ADHD).\n\n"
     "مبتنی بر پروتکل درمان، ۲۰۰+ مقاله علمی و راهنماهای NICE · APA · WFSBP · WHO پاسخ می‌دهم.\n\n"
     "*نحوه‌ی استفاده:*\n"
-    "• سؤال بالینی‌تان را همین‌جا بنویسید (فارسی یا انگلیسی)\n"
+    "• سؤال بالینی‌تان را همین‌جا بنویسید — پاسخ فارسی است\n"
+    "• از دکمه‌های پایین صفحه هم می‌توانید استفاده کنید 👇\n"
     "• /risk — پایش خطر روزانه/هفتگی با پرسش‌های مرحله‌ای\n"
-    "• /about — درباره‌ی پایگاه دانش\n"
-    "• /help — فهرست دستورها\n\n"
+    "• /tip — نکته‌ی آموزشی امروز\n"
+    "• /about — درباره‌ی پایگاه دانش\n\n"
     "⚠️ _من جایگزین پزشک نیستم؛ در وضعیت اورژانسی فوراً با خدمات درمانی تماس بگیرید._"
 )
 
 HELP_TEXT = (
     "📖 *راهنما*\n\n"
-    "• پیام آزاد → پاسخ RAG از پروتکل، مقالات و راهنماها\n"
+    "• پیام آزاد → پاسخ RAG از پروتکل، مقالات و راهنماها (فارسی)\n"
+    "• دکمه‌های پایین صفحه: پایش خطر، نکته امروز، راهنما، درباره\n"
+    "• /tip — نکته‌ی آموزشی امروز از پروتکل و راهنماها\n"
     "• /ask سؤال → همان پاسخ (مناسب گروه‌ها)\n"
     "• /risk → ارزیابی خطر ۷ شاخصه (۰ تا ۴)\n"
     "• /cancel → لغو ارزیابی در جریان\n"
@@ -120,7 +136,8 @@ def format_answer(question: str) -> str:
         lines.append("📚 منابع:")
         for i, s in enumerate(top, 1):
             src = s["source"] if len(s["source"]) <= 60 else s["source"][:57] + "…"
-            lines.append(f"{i}. {src} (شباهت {s['score']})")
+            kind = TYPE_FA.get(s["type"], s["type"])
+            lines.append(f"{i}. {src} ({kind}، شباهت {s['score']})")
         lines.append("")
     lines.append(DISCLAIMER)
     return "\n".join(lines)
@@ -158,15 +175,23 @@ def throttled(user_id: int, context: ContextTypes.DEFAULT_TYPE) -> bool:
 # ---------------- دستورها ----------------
 
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.effective_message.reply_text(WELCOME, parse_mode="Markdown")
+    await update.effective_message.reply_text(WELCOME, parse_mode="Markdown",
+                                              reply_markup=MAIN_KEYBOARD)
 
 
 async def cmd_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.effective_message.reply_text(HELP_TEXT, parse_mode="Markdown")
+    await update.effective_message.reply_text(HELP_TEXT, parse_mode="Markdown",
+                                              reply_markup=MAIN_KEYBOARD)
 
 
 async def cmd_about(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(ABOUT_TEXT, parse_mode="Markdown")
+
+
+async def cmd_tip(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """نکته‌ی آموزشی امروز (همان پست روزانه‌ی کانال)."""
+    await update.effective_message.reply_text(telegram_posts.tip_of_day(), parse_mode="Markdown",
+                                              reply_markup=MAIN_KEYBOARD)
 
 
 async def cmd_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -210,7 +235,17 @@ async def _keep_typing(chat_id: int, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def on_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await answer_question(update, context, update.effective_message.text)
+    """پیام آزاد؛ دکمه‌های منوی پایین به دستور متناظر نگاشت می‌شوند."""
+    text = (update.effective_message.text or "").strip()
+    if text == BTN_RISK:
+        return await cmd_risk(update, context)
+    if text == BTN_TIP:
+        return await cmd_tip(update, context)
+    if text == BTN_HELP:
+        return await cmd_help(update, context)
+    if text == BTN_ABOUT:
+        return await cmd_about(update, context)
+    await answer_question(update, context, text)
 
 
 async def cmd_ask(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -405,6 +440,32 @@ def ensure_index():
     build_index.main()
 
 
+async def _post_init(app: Application) -> None:
+    """فهرست دستورها را در منوی «/» تلگرام ثبت می‌کند (کاربران + مدیران)."""
+    try:
+        await app.bot.set_my_commands([
+            BotCommand("start", "شروع و معرفی دستیار"),
+            BotCommand("help", "راهنما"),
+            BotCommand("risk", "پایش خطر ۷ شاخصه"),
+            BotCommand("tip", "نکته‌ی آموزشی امروز"),
+            BotCommand("about", "درباره‌ی پایگاه دانش"),
+            BotCommand("ask", "پرسش — مثلاً در گروه‌ها"),
+            BotCommand("cancel", "لغو ارزیابی در جریان"),
+        ])
+        log.info("منوی دستورها ثبت شد.")
+    except Exception as e:
+        log.warning("ثبت منوی دستورها ناموفق: %s", e)
+    for admin_id in config.TELEGRAM_ADMIN_IDS:
+        try:
+            await app.bot.set_my_commands([
+                BotCommand("post_tip", "ارسال فوری پست امروز به کانال"),
+                BotCommand("post_digest", "ارسال فوری رصد هفتگی به کانال"),
+                BotCommand("channel_status", "بررسی دسترسی کانال"),
+            ], scope=BotCommandScopeChat(admin_id))
+        except Exception as e:
+            log.warning("ثبت دستورهای مدیر %s ناموفق: %s", admin_id, e)
+
+
 def main():
     ensure_index()
     # پیش‌گرم کردن مدل امبدینگ تا اولین پیام کاربر سریع پاسخ بگیرد
@@ -412,10 +473,11 @@ def main():
     pipeline.answer("آماده‌سازی")
     log.info("مدل آماده است.")
 
-    app = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
+    app = Application.builder().token(config.TELEGRAM_BOT_TOKEN).post_init(_post_init).build()
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(CommandHandler("help", cmd_help))
     app.add_handler(CommandHandler("about", cmd_about))
+    app.add_handler(CommandHandler("tip", cmd_tip))
     app.add_handler(CommandHandler("risk", cmd_risk))
     app.add_handler(CommandHandler("cancel", cmd_cancel))
     app.add_handler(CommandHandler("ask", cmd_ask))

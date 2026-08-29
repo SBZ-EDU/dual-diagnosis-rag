@@ -16,6 +16,24 @@ SYSTEM_PROMPT = (
     "اگر در متن نبود، صادقانه بگو اطلاع نداری. همیشه تأکید کن تصمیم نهایی با پزشک است."
 )
 
+# نام فارسی انواع منبع برای نمایش به کاربر
+TYPE_FA = {
+    "protocol": "پروتکل",
+    "article": "مقاله",
+    "guideline": "راهنمای بالینی",
+    "patient": "سابقه بیمار",
+    "feedback": "بازخورد",
+}
+
+
+def is_latin_text(text: str) -> bool:
+    """True اگر متن عمدتاً لاتین/انگلیسی باشد (برای برچسب «منبع انگلیسی»)."""
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return False
+    latin = sum(1 for c in letters if ord(c) < 128)
+    return latin / len(letters) > 0.7
+
 
 def _load():
     global _pipe, _load_tried, _load_ok
@@ -64,7 +82,9 @@ def extractive_answer(query: str, contexts: List[Dict]) -> str:
         snippet = c["text"].strip().replace("\n", " ")
         if len(snippet) > 360:
             snippet = snippet[:360] + "…"
-        lines.append(f"\n{i}) ({c['source']} — نوع: {c['type']})\n{snippet}")
+        kind_fa = TYPE_FA.get(c.get("type", ""), c.get("type", "نامشخص"))
+        note = " · منبع انگلیسی" if is_latin_text(snippet) else ""
+        lines.append(f"\n{i}) ({c['source']} — {kind_fa}{note})\n{snippet}")
     lines.append("\n\n⚠️ این پاسخ از متن پایگاه دانش استخراج شده؛ تصمیم نهایی درمان با پزشک است.")
     return "\n".join(lines)
 

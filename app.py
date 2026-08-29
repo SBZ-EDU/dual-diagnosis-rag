@@ -47,7 +47,8 @@ def answer(question: str):
     if not question:
         return "لطفاً سؤال خود را بنویسید.", "", {}
     res = pipeline.answer(question)
-    src_lines = "\n".join(f"- {s['source']} (نوع: {s['type']}، شباهت: {s['score']})"
+    from rag.generator import TYPE_FA
+    src_lines = "\n".join(f"- {s['source']} (نوع: {TYPE_FA.get(s['type'], s['type'])}، شباهت: {s['score']})"
                           for s in res["sources"])
     meta = {
         "method": res["method"],
