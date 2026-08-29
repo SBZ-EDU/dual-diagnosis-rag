@@ -88,7 +88,7 @@ def add_feedback(question: str, answer_text: str, rating: int, comment: str = ""
     os.makedirs(config.SOURCES["feedback"], exist_ok=True)
     rec = {
         "id": uuid.uuid4().hex[:8],
-        "ts": datetime.datetime.utcnow().isoformat() + "Z",
+        "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
         "question": question,
         "answer": answer_text,
         "rating": int(rating),

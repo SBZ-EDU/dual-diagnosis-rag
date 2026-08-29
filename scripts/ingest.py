@@ -14,7 +14,7 @@ import config
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kind", required=True,
-                    choices=["articles", "patient_history", "feedback"])
+                    choices=["articles", "guidelines", "patient_history", "feedback"])
     ap.add_argument("--file", help="مسیر فایل برای کپی به پوشه‌ی منبع")
     ap.add_argument("--name", help="نام فایل مقصد (پیش‌فرض: نام فایل اصلی)")
     ap.add_argument("--text", help="متن مستقیم به‌جای فایل")

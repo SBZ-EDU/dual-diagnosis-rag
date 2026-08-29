@@ -1,11 +1,17 @@
 # وابستگی‌های اپ RAG تشخیص دوگانه
+# NOTE (debug 2026-08): gradio 4.44.1 breaks with starlette>=0.47 ("unhashable
+# type: 'dict'") and with huggingface_hub>=1.0 (HfFolder removed). Both were
+# previously unpinned, so a fresh install produced a broken app. torch 2.4.1
+# has no wheels for Python 3.13+, hence the environment markers below.
 gradio==4.44.1
+fastapi<0.116            # keeps starlette<0.42 — required by gradio 4.44.1
+huggingface_hub>=0.28,<1.0
 sentence-transformers==3.2.1
 transformers==4.44.2
 accelerate>=0.30
-torch==2.4.1
+torch==2.4.1 ; python_version < "3.13"
+torch>=2.6,<3 ; python_version >= "3.13"
 numpy<2
-huggingface_hub
 wandb
 firebase-admin>=6.5,<8
 peft==0.12.0

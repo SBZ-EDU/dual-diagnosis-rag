@@ -2,7 +2,8 @@
 import json, os, urllib.parse, urllib.request
 from datetime import date, timedelta
 
-QUERY = '(psychosis OR schizophrenia) AND (substance use OR dual diagnosis OR borderline personality) AND (treatment OR guideline)'
+# [tiab] = فقط عنوان و چکیده؛ بدون آن PubMed تطبیق‌های بسیار آزاد برمی‌گرداند
+QUERY = '(psychosis[tiab] OR schizophreni*[tiab]) AND (substance use[tiab] OR substance-related[tiab] OR dual diagnosis[tiab] OR borderline[tiab]) AND (treatment[tiab] OR therapy[tiab] OR guideline*[tiab] OR trial[tiab])'
 
 def _json(url):
     with urllib.request.urlopen(url, timeout=30) as r: return json.load(r)
@@ -11,7 +12,7 @@ def fetch(days=7, limit=20):
     since = (date.today()-timedelta(days=days)).isoformat()
     q = urllib.parse.quote(f'{QUERY} AND ("{since}"[Date - Publication] : "3000"[Date - Publication])')
     base='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
-    ids=_json(f'{base}esearch.fcgi?db=pubmed&retmode=json&retmax={limit}&term={q}')["esearchresult"]["idlist"]
+    ids=_json(f'{base}esearch.fcgi?db=pubmed&retmode=json&retmax={limit}&sort=relevance&term={q}')["esearchresult"]["idlist"]
     if not ids: return []
     s=_json(f'{base}esummary.fcgi?db=pubmed&retmode=json&id={",".join(ids)}')["result"]
     return [{"pmid":i,"title":s[i].get("title"),"date":s[i].get("pubdate"),

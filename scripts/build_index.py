@@ -26,6 +26,7 @@ def main():
 
     print("۳) ذخیره‌ی ایندکس...")
     store.save(docs, vectors)
+    store.save_manifest()  # برای تشخیص ایندکسِ قدیمی نسبت به داده‌های جدید
     print(f"   ✓ ذخیره شد در index/  ({time.time()-t0:.1f}s)")
     print("\nنمونه‌ی جست‌وجو:")
     from rag import retriever
