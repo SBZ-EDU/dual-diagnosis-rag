@@ -21,3 +21,9 @@ database_id = "adc5372f-1bb1-4833-81f2-524ee8efc369"
 binding = "GUIDELINES_DB"
 database_name = "dual-diagnosis-guidelines-db"
 database_id = "54040cee-3c8d-4884-8e0a-c4b3b7e12e44"
+
+# جست‌وجوی معنایی (Vectorize + bge-m3 چندزبانه)
+# ساخت ایندکس (یک‌بار): npx wrangler vectorize create ddx-semantic --dimensions 1024 --metric cosine
+[[vectorize]]
+binding = "VEC"
+index_name = "ddx-semantic"
