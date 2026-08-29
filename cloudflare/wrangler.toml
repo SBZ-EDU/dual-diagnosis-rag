@@ -7,6 +7,10 @@ account_id = "5b456a2b43bb367410c50b35b9e7f71f"
 crons = ["17 3 * * 1"]
 
 [vars]
+# مدل پاسخ‌گویی — قابل‌تعویض بدون تغییر کد. گزینه‌های چندزبانه‌ی قوی‌تر:
+#   "@cf/zai-org/glm-4.7-flash" (چندزبانه، سریع) · "@cf/qwen/qwen3.8-27b"
+#   (شناسه‌ی دقیق را با `npx wrangler ai models` چک کنید)
+AI_CHAT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast"
 HF_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
 
 [ai]
