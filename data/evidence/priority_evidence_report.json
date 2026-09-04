@@ -1,0 +1,19 @@
+{
+  "pool_unique": 816,
+  "selected": 100,
+  "open_access": 100,
+  "direct_pdf": 97,
+  "retracted": 0,
+  "by_topic": {
+    "meth_treatment": 20,
+    "psychosis_dual": 27,
+    "gambling": 33,
+    "family_finance": 5,
+    "family_intervention": 15
+  },
+  "by_type": {
+    "review": 25,
+    "article": 75
+  },
+  "warning": "Automated priority screening only; full-text appraisal and clinician approval still required."
+}
