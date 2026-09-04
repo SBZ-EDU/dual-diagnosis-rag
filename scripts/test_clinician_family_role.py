@@ -8,6 +8,10 @@ checks={
  'dual_role_boundary': 'رابطه دوگانه' in idx,
  'advanced_module': "id:'family-clinician-sister-advanced'" in idx,
  'twelve_questions': idx[idx.index("id:'family-clinician-sister-advanced'"):].split(']},',1)[0].count('{"q"') == 12,
+ 'separate_learning_track': "audience:'clinician_family'" in idx,
+ 'hard_pass_score': "passScore:83" in idx,
+ 'article_sources': idx[idx.index("id:'family-clinician-sister-advanced'"):].split('],type:',1)[0].count("url:'https://") >= 8,
+ 'dynamic_failure_message': 'حداقل ${passScore}٪ لازم است' in idx,
  'ui_demo': "demoRole('clinician_family')" in page,
  'ui_chat_option': 'value="clinician_family"' in page,
 }
