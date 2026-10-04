@@ -5,7 +5,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import config
 
 def get_json(url: str, timeout=20):
-    with urllib.request.urlopen(url, timeout=timeout) as r:
+    req = urllib.request.Request(url, headers={"User-Agent": "DualDiagnosis-Telegram-Doctor/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.load(r)
 
 def main() -> int:
